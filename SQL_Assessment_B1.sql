@@ -68,7 +68,6 @@ select * from
 
 --N. display the product name and product price and count of product cost revised (productcost history)
 
---O. check the department having more salary revision
------------------------
+--O. check the department having moreÂ salaryÂ revision
 
 
