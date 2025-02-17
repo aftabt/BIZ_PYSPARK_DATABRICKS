@@ -53,21 +53,88 @@ from Purchasing.PurchaseOrderDetail
 order by ord_qty desc
 
 --H. Which product is the oldest product as on the date (refer the product sell start date)
-select * from Production.Product
-select * from 
+select ProductID,Name,SellStartDate 
+from Production.Product
+order by SellStartDate;
 
 --I. Find all the employees whose salary is more than the average salary
+select * from HumanResources.EmployeePayHistory
+
+select distinct e.BusinessEntityID, p.FirstName, p.LastName, 
+(select avg(rate) from HumanResources.EmployeePayHistory) avg_salary 
+from HumanResources.Employee e,
+Person.Person p
+where e.BusinessEntityID = p.BusinessEntityID
+and e.BusinessEntityID in 
+	(select BusinessEntityID 
+	from HumanResources.EmployeePayHistory 
+	where rate >(select avg(rate) 
+				from HumanResources.EmployeePayHistory))
 
 --J. Display country region code, group average sales quota based on territory id
+select * from Sales.SalesTerritory;
+select * from Sales.SalesPerson;
+
+select distinct st.TerritoryID,st.CountryRegionCode,st.[Group],
+avg(sp.salesquota) over (partition by sp.territoryid) as avg_salequota
+from Sales.SalesTerritory as st,
+Sales.SalesPerson as sp
+where st.TerritoryID = sp.TerritoryID;
 
 --k. Find the average age of male and female
+select * from HumanResources.Employee
+
+select gender,
+avg(DATEDIFF(year,BirthDate,HireDate)) as avg_age
+from HumanResources.Employee
+group by Gender;
 
 --L. Which product is purchased more? (purchase order details)
+select * from Purchasing.PurchaseOrderDetail
+
+select ProductID,sum(orderqty) as total_ordqty
+from Purchasing.PurchaseOrderDetail
+group by ProductID
+order by total_ordqty desc;
 
 --M. Check for sales person details which are working in Stores (find the sales person ID)
+select * from sales.SalesPerson
+select distinct Name from Sales.Store
+
+select distinct s.[Name],p.FirstName
+from sales.Store as s,
+Sales.SalesPerson as sp,
+Person.Person as p
+where s.SalesPersonID=sp.BusinessEntityID
+and p.BusinessEntityID = sp.BusinessEntityID
 
 --N. display the product name and product price and count of product cost revised (productcost history)
+select * from Production.ProductCostHistory
+select * from Production.Product;
+select * from Production.ProductListPriceHistory;
+select * from Production.TransactionHistory;
+
+select pp.Name,th.ActualCost,count(pch.ProductID) as prod_cnt
+from Production.Product as pp,
+Production.ProductCostHistory as pch,
+Production.TransactionHistory as th
+where pp.ProductID = pch.ProductID
+and th.ProductID = pp.ProductID
+group by pp.name,th.ActualCost
+having count(pch.ProductID) > 1
 
 --O. check the department having more salary revision
+select * from HumanResources.EmployeePayHistory;
+select * from HumanResources.EmployeeDepartmentHistory;
+select * from HumanResources.Department;
 
+select  edh.DepartmentID,d.Name,
+count(eph.payfrequency) as payfreq
+from HumanResources.EmployeePayHistory as eph,
+HumanResources.EmployeeDepartmentHistory as edh,
+HumanResources.Department as d
+where eph.BusinessEntityID = edh.BusinessEntityID
+and edh.DepartmentID = d.DepartmentID
+group by edh.DepartmentID,d.Name
+having count(eph.payfrequency)>1
 
